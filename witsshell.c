@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <string.h>
 
+bool flagExit = false;
 
 int main(int MainArgc, char *MainArgv[]){
 	if(MainArgc > 2)
@@ -33,6 +34,7 @@ int main(int MainArgc, char *MainArgv[]){
 
 void cmdExit()
 {
+    flagExit = true;
     printf("Exiting\n");
     exit(0);
 }
@@ -44,7 +46,7 @@ void cmdPath()
 
 void cmdCD()
 {
-    printf("CD\n")
+    printf("CD\n");
 }
 
 void execCommand(char* command)
@@ -53,28 +55,28 @@ void execCommand(char* command)
     //have to code exit cd and path.
 
     //is above command?
-    if (strcmp(command, "exit"))
+    if (!strcmp(command, "exit"))
         cmdExit();
-    else if(strcmp(command, "path"))
+    else if(!strcmp(command, "path"))
         cmdPath();
-    else if(strcmp(command, "cd"))
+    else if(!strcmp(command, "cd"))
         cmdCD();
 }
 
-void interactive_mode()
-{
-    // command buffer
+void interactive_mode() {
+    // Command buffer
     char *command = NULL;
-    size_t command_size = 128;
-    command = (char *)malloc(command_size * sizeof(char));
+    size_t command_size = 0;  // Initialize to 0, getline will allocate memory
 
-    bool flag = false;
-    //read in command and send for execution to executing function -> do this in a loop
-    while (!flag)
-    {
+    while (true) {
         printf("witsshell> ");
-        getline();
+        ssize_t nread = getline(&command, &command_size, stdin);
+        
+        // Strip newline character
+        command[strcspn(command, "\n")] = 0;
+        execCommand(command);
     }
+    free(command);  // Free the allocated buffer
 }
 
 
