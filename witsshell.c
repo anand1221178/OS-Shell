@@ -8,7 +8,14 @@
 #include <fcntl.h>
 #include <string.h>
 
+//flag for exit
 bool flagExit = false;
+
+//count the number of arguments
+int count;
+
+//mutiple command argument array
+char *command_arr[100];
 
 int main(int MainArgc, char *MainArgv[]){
 	if(MainArgc > 2)
@@ -39,14 +46,24 @@ void cmdExit()
     exit(0);
 }
 
-void cmdPath()
+void cmdPath(char* command)
 {
     printf("Path\n");
 }
 
-void cmdCD()
+void cmdCD(char* command)
 {
-    printf("CD\n");
+    printf("Arrived in CD\n");
+    if (count == 0 || count >2)
+    {
+        printf("Invalid number of arguments\n");
+        printf("%d\n", count);
+        return;
+    }
+    else if (count == 2)
+    {
+        chdir(command_arr[1]);
+    }
 }
 
 void execCommand(char* command)
@@ -54,13 +71,32 @@ void execCommand(char* command)
     //execute the multiple commands {builtin - exit, cd, path or not}
     //have to code exit cd and path.
 
+    //expect more than 1 command, hence split the command and store in array command_arr
+    char *token = strtok(command, " ");
+    int i = 0;
+    count = 0;
+    while(token != NULL)
+    {
+        command_arr[i] = token;
+        token = strtok(NULL, " ");
+        i++;
+        count++;
+    }
+
     //is above command?
-    if (!strcmp(command, "exit"))
+    if (!strcmp(command_arr[0], "exit"))
         cmdExit();
-    else if(!strcmp(command, "path"))
-        cmdPath();
-    else if(!strcmp(command, "cd"))
-        cmdCD();
+
+    else if(!strcmp(command_arr[0], "path"))
+    {
+        //send in the command_arr to the function
+        cmdPath(command_arr);
+    }
+    else if(!strcmp(command_arr[0], "cd"))
+    {
+        //send in the command_arr to the function
+        cmdCD(command_arr);
+    }
 }
 
 void interactive_mode() {
@@ -71,7 +107,7 @@ void interactive_mode() {
     while (true) {
         printf("witsshell> ");
         ssize_t nread = getline(&command, &command_size, stdin);
-        
+
         // Strip newline character
         command[strcspn(command, "\n")] = 0;
         execCommand(command);
