@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "stdbool.h": "c",
+        "string.h": "c",
+        "fcntl.h": "c",
+        "wait.h": "c",
+        "assert.h": "c",
+        "features.h": "c",
+        "stdio.h": "c"
+    }
+}
