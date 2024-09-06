@@ -115,23 +115,70 @@ void programsExec(char *command[])
 
             // Construct the full path to the command
             snprintf(fullPath, sizeof(fullPath), "%s%s", path, program);
-
+            //now we can exec the program
             // Check if the program is accessible
             if (access(fullPath, X_OK) == 0)
             {
                 AccessProg = true;
+                
+                int redirect_idx = -1;
+                int multi_idx_cnt;
+
+
+                //check for redirect if present
+                for (int i = 0; i < ArgCount; i++)
+                {
+                    if (strcmp(command[i], ">") == 0)
+                    {
+                        redirect_idx = i;
+                        break; //just want where the idx of the < is so i can redirect output to the output after this
+                    }
+                }
+
+                //check for & for multi commands
+                for (int i = 0; i < ArgCount; i++)
+                {
+                    if (strcmp(command[i], "&") == 0)
+                    {
+                        ++multi_idx_cnt;
+                    }
+                }
+
+                //if redirect is not -1 then we have redirect, fork first since we have to run prog
 
                 pid_t pid = fork();
                 if (pid == 0)
                 {
-                    // Child process: Execute the command
+                    if(redirect_idx != -1)
+                    {
+                        int fd = open(command[redirect_idx + 1], O_CREAT | O_WRONLY | O_TRUNC, 0644); 
+                        //+1 sicne we want to open the file after >
+                        //O_CREAT -> make file if DNE
+                        //O_WRONLY -> write only file
+                        //O_TRUNC -> if exists trunc then overwrite (needed in assignement)
+                        //reference -> https://www.geeksforgeeks.org/input-output-system-calls-c-create-open-close-read-write/
+                        if (fd == -1)
+                        {
+                            perror("Failed to open file for redirection");
+                            exit(1);
+                        }
+
+                        //reference for below code -> https://www.geeksforgeeks.org/dup-dup2-linux-system-call/
+                        dup2(fd, STDOUT_FILENO);
+                        close(fd);
+
+
+                        // Remove the redirection symbol and file from the command
+                        command[redirect_idx] = NULL;
+                    }
+
+                    // exec ccommand on child proc
                     execv(fullPath, command);
                     perror("execv failed");
                     exit(1);
                 }
                 else if (pid > 0)
                 {
-                    // Parent process: Wait for the child to finish
                     wait(NULL);
                 }
                 else
