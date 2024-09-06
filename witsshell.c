@@ -58,7 +58,7 @@ int main(int MainArgc, char *MainArgv[])
 void cmdExit()
 {
     flagExit = true;
-    printf("Exiting\n");
+    // printf("Exiting\n");
     exit(0);
 }
 
@@ -87,7 +87,7 @@ void cmdPath(char *command[])
 
 void cmdCD(char *command[])
 {
-    printf("Arrived in CD\n");
+    // printf("Arrived in CD\n");
     if (ArgCount == 0 || ArgCount > 2)
     {
         printf("Invalid number of arguments\n");
@@ -198,10 +198,17 @@ void interactive_mode()
     {
         printf("witsshell> ");
         ssize_t nread = getline(&command, &command_size, stdin);
-
-        // Strip newline character
-        command[strcspn(command, "\n")] = 0;
-        execCommand(command);
+        //add support for no commmand given, check if command is null
+        if (strcmp(command, "\n") == 0)
+        {
+            continue;
+        }
+        else
+        {
+            // Strip newline character
+            command[strcspn(command, "\n")] = 0;
+            execCommand(command);
+        }
     }
     free(command); // Free the allocated buffer
 }
